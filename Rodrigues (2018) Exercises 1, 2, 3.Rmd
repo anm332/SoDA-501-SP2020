@@ -1,37 +1,28 @@
 ---
-title: "Rodrigues, 2020 (Exercises 1, 2, 3)"
+title: "Rodrigues, 2020 (Exercises 1 & 2)"
+author: "Amanda Moeller"
+date: "2020.03.16"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
-```{r}
-plot(cars)
-```
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 
 
-Exercise 1
+## **Exercise 1:**
 
-Load the LaborSupply dataset from the Ecdat package and answer the following questions:
+### Load the LaborSupply dataset from the Ecdat package and answer the following questions:
 ```{r}
 install.packages("Ecdat")
+library(Ecdat)
 devtools::install_github("tidyverse/tidyr")
 library(tidyr)
-library(Ecdat)
+
+
 data(LaborSupply)
 head(LaborSupply) 
 str(LaborSupply)
 ```
-Compute the average annual hours worked by year (plus standard deviation)
 
+### Compute the average annual hours worked by year (plus standard deviation)
 ``` {r}
 # ("lnhr" = log of annual hours worked)
 
@@ -47,7 +38,7 @@ SD_hoursBYyear
           
 ```
 
-What age group worked the most hours in the year 1982?
+### What age group worked the most hours in the year 1982?
 ``` {r}
 LaborSupply1 <- LaborSupply %>% filter(year==1982) %>% 
   group_by(age) %>% 
@@ -57,9 +48,9 @@ LaborSupply1 <- LaborSupply %>% filter(year==1982) %>%
 LaborSupply
 
 # The 34-year old age group worked the greatest amount of hours in 1982, with a  mean of 270.4
-
 ```
-Create a variable, n_years that equals the number of years an individual stays in the panel. Is the panel balanced?
+
+### Create a variable, n_years that equals the number of years an individual stays in the panel. Is the panel balanced?
 ``` {r}
 # Observations range from 1979 to 1988
 # So number of years an individual stays can range from 1-10
@@ -67,17 +58,18 @@ LaborSupply %>% group_by(id) %>% mutate(n_years=n())
 
 # It looks like all stay in for 10 years?
 # That's probably incorrect. I'll return to this later.
-
 ```
-Which are the individuals that do not have any kids during the whole period? Create a variable, no_kids, that flags these individuals (1 = no kids, 0 = kids)
+
+### Which are the individuals that do not have any kids during the whole period? Create a variable, no_kids, that flags these individuals (1 = no kids, 0 = kids)
 ``` {r}
 LaborSupply3 <- LaborSupply %>% group_by(id) %>% 
   mutate(totalkids=max(kids)) %>% mutate(no_kids=if_else(totalkids == 0, 1, 0))
 LaborSupply3
-# column "no_kids" shows 0 for individuals with kids at some point throughout the study and 1 for individuals with no reported kids throughout the study
 
+# column "no_kids" shows 0 for individuals with kids at some point throughout the study and 1 for individuals with no reported kids throughout the study
 ```
-Using the no_kids variable from before compute the average wage, standard deviation and number of observations in each group for the year 1980 (no kids group vs kids group).
+
+### Using the no_kids variable from before compute the average wage, standard deviation and number of observations in each group for the year 1980 (no kids group vs kids group).
 ``` {r}
 LaborSupply4 <- LaborSupply3 %>% group_by(no_kids) %>% filter(year==1980) %>% summarise(mean(lnwg), sd(lnwg), n())
 
@@ -87,8 +79,47 @@ LaborSupply4
 # For individuals without kids, the average wage was 2.68 (sd = 0.42) in 1980.
 
 ```
-Create the lagged logarithm of hours worked and wages. Remember that this is a panel.
-``` {r}
+## *Exercise 2:*
 
+### What does the following code do? Copy and paste it in an R interpreter to find out!
+```{r}
+LaborSupply %>%
+  group_by(id) %>%
+  mutate_at(vars(starts_with("l")), funs(lag, lead))
+
+# It looks like this code groups by participant and gives us the lag and lead for all variables that begin with the letter "l" (lnhr and lnwg)
+```
+
+
+### mutate_at() is a scoped version of mutate() which allows you to specify a number of columns and functions in one go. This also exists for summarise().
+
+### Using summarise_at(), compute the mean, standard deviation and number of individuals of lnhr and lnwg for each individual.
+```{r}
+LaborSupply %>%
+  group_by(id) %>%
+  mutate_at(vars(starts_with("l")), funs(mean, sd, n()))
+# lnwg_mean = 1.95
+# lnwg_sd = 0.07
+# lnwg_n = 10
+
+# lnhr_mean = 7.65
+# lnhr_sd = 0.14
+# lnhr_n = 10
 
 ```
+
+
+
+### Create the lagged logarithm of hours worked and wages. Remember that this is a panel.
+``` {r}
+# I'm not super knowledgeable about what this means, but I'm just going to wing it
+
+LaborSupply %>% 
+  group_by(id) %>%
+  mutate(lag_hours = lag(lnhr)) %>%
+  mutate(lag_lnwg = lag(lnwg)) 
+
+# ... Did I do it?
+```
+
+
